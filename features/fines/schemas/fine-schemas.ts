@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { PaymentMethod } from '@/domain/payments/entities';
 
 export const createFineSchema = z.object({
-  hostelId: z.preprocess(
-    (val) => (typeof val === 'string' && val.trim().length > 0 ? val : '00000000-0000-0000-0000-000000000001'),
-    z.string().uuid('Invalid hostel ID'),
-  ),
+  hostelId: z.preprocess((val) => {
+    if (typeof val !== 'string') return '00000000-0000-0000-0000-000000000001';
+    const t = val.trim();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t) ? t : '00000000-0000-0000-0000-000000000001';
+  }, z.string().uuid('Invalid hostel ID')),
   residentId: z.string().uuid('Invalid resident ID'),
   amount: z.number().positive('Fine amount must be greater than zero'),
   reason: z.string().min(3, 'Reason must be at least 3 characters'),
